@@ -5,6 +5,7 @@
 */target/
 dependency-reduced-pom.xml
 *.properties
+*.vscode
 
 ### STS ###
 .apt_generated
