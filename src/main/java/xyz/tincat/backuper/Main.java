@@ -1,24 +1,21 @@
 package xyz.tincat.backuper;
 
-import xyz.tincat.backuper.email.Email;
-import xyz.tincat.backuper.email.EmailUtil;
-import xyz.tincat.backuper.option.Options;
+import xyz.tincat.backuper.task.BackupTask;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Timer;
 
 public class Main {
 
     public static void main(String[] args) {
-        Options options = Options.getInstance("email.properties");
-        Email email = new Email(options.getPropMap());
-        try {
-            EmailUtil.sendEmail(email);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 5);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        Timer timer = new Timer();
+        BackupTask backupTask = new BackupTask(timer, calendar);
+        backupTask.start();
+        System.out.println(new Date());
     }
 }

@@ -16,6 +16,7 @@ import java.util.Properties;
  */
 public class EmailUtil {
     public static void sendEmail(final Email email) throws MessagingException, IOException {
+        System.out.println("send email " + email);
         // 配置发送邮件的环境属性
         Properties props = new Properties();
         /*
