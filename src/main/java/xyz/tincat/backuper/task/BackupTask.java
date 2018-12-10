@@ -5,13 +5,11 @@ import xyz.tincat.backuper.email.EmailUtil;
 import xyz.tincat.backuper.option.Options;
 
 import javax.mail.MessagingException;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 /**
  * @ Date       ：Created in 11:57 2018/12/6
@@ -23,12 +21,19 @@ public class BackupTask extends TimerTask {
     private Timer timer;
     private String filename;
     private Date nextDate;
+    private MessageDigest md;
+    private String md5;
 
     public BackupTask(Timer timer, Calendar calendar) {
         this(timer, null, calendar);
     }
 
     public BackupTask(Timer timer, String filename, Calendar calendar) {
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         this.timer = timer;
         this.filename = filename;
         this.nextDate = calendar.getTime();
@@ -48,16 +53,42 @@ public class BackupTask extends TimerTask {
     @Override
     public void run() {
         Options options = Options.getInstance("email.properties");
-        Email email = new Email(options.getPropMap());
+        Email email = new Email(options.getProperties());
         if (filename != null) {
             email.setFilename(filename);
         }
+        tryEmailBackup(email);
+    }
+
+    private void tryEmailBackup(Email email) {
+        FileInputStream fis = null;
         try {
-            EmailUtil.sendEmail(email);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+            fis = new FileInputStream(email.getFilename());
+            byte[] buffer = new byte[8192];
+            int length = -1;
+            md.reset();
+            while ((length = fis.read(buffer)) != -1) {
+                md.update(buffer, 0, length);
+            }
+            String digest = Arrays.toString(md.digest());
+            if (!digest.equals(md5)) {
+                String text = email.getText();
+                text = text + "\n\n" + new Date() + " 备份文件已更新！";
+                email.setText(text);
+                EmailUtil.sendEmail(email);
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 }

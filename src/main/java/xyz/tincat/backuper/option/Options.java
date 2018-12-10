@@ -86,7 +86,7 @@ public class Options implements IOptions, Serializable {
     }
 
     @Override
-    public Properties getPropMap() {
+    public Properties getProperties() {
         Properties properties = new Properties();
         properties.putAll(this.propMap);
         return properties;

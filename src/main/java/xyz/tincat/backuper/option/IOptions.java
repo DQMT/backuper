@@ -9,5 +9,5 @@ public interface IOptions {
 
     String get(String key);
 
-    Properties getPropMap();
+    Properties getProperties();
 }
