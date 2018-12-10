@@ -1,0 +1,1 @@
+jps -l | grep backuper | awk '{print $1}' | xargs kill -9
