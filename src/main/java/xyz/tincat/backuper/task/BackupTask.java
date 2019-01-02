@@ -1,5 +1,6 @@
 package xyz.tincat.backuper.task;
 
+import lombok.extern.slf4j.Slf4j;
 import xyz.tincat.backuper.email.Email;
 import xyz.tincat.backuper.email.EmailUtil;
 import xyz.tincat.backuper.option.Options;
@@ -16,26 +17,22 @@ import java.util.*;
  * @ Modified By：
  * @ Version:     0.1
  */
+@Slf4j
 public class BackupTask extends TimerTask {
     private static final long PERIOD_DAY = 24 * 60 * 60 * 1000;
     private Timer timer;
-    private String filename;
     private Date nextDate;
     private MessageDigest md;
     private String md5;
 
-    public BackupTask(Timer timer, Calendar calendar) {
-        this(timer, null, calendar);
-    }
 
-    public BackupTask(Timer timer, String filename, Calendar calendar) {
+    public BackupTask(Timer timer, Calendar calendar) {
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         this.timer = timer;
-        this.filename = filename;
         this.nextDate = calendar.getTime();
         if (this.nextDate.before(new Date())) {//如果不加一天，任务会立即执行
             Calendar startDT = Calendar.getInstance();
@@ -52,12 +49,14 @@ public class BackupTask extends TimerTask {
 
     @Override
     public void run() {
+        log.info("backuper task start");
         Options options = Options.getInstance("email.properties");
+        String filesAndFolders = options.get("filesAndFolders");
+        FilePacker filePacker = new FilePacker(filesAndFolders);
+        filePacker.pack(options.get("attachFilePath"));
         Email email = new Email(options.getProperties());
-        if (filename != null) {
-            email.setFilename(filename);
-        }
         tryEmailBackup(email);
+        log.info("backuper task finish");
     }
 
     private void tryEmailBackup(Email email) {
@@ -75,6 +74,13 @@ public class BackupTask extends TimerTask {
                 String text = email.getText();
                 text = text + "\n\n" + new Date() + " 备份文件已更新！";
                 email.setText(text);
+                EmailUtil.sendEmail(email);
+                md5 = digest;
+            }else{
+                String text = email.getText();
+                text = text + "\n\n" + new Date() + " 备份文件没有更新！";
+                email.setText(text);
+                email.setFilename(null);
                 EmailUtil.sendEmail(email);
             }
         } catch (IOException e) {

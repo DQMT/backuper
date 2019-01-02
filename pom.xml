@@ -67,6 +67,11 @@
             <artifactId>jakarta.mail</artifactId>
             <version>1.6.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.18</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,5 +1,7 @@
 package xyz.tincat.backuper.email;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -14,9 +16,10 @@ import java.util.Properties;
  * @ Modified By：
  * @ Version:     0.1
  */
+@Slf4j
 public class EmailUtil {
     public static void sendEmail(final Email email) throws MessagingException, IOException {
-        System.out.println("send email " + email);
+        log.info("send email " + email);
         // 配置发送邮件的环境属性
         Properties props = new Properties();
         /*
@@ -56,7 +59,9 @@ public class EmailUtil {
         MimeBodyPart mbp2 = new MimeBodyPart();
         Multipart mp = new MimeMultipart();
         mbp1.setText(email.getText());
-        mbp2.attachFile(email.getFilename());
+        if (email.getFilename() != null) {
+            mbp2.attachFile(email.getFilename());
+        }
         mp.addBodyPart(mbp1);
         mp.addBodyPart(mbp2);
 
@@ -65,7 +70,7 @@ public class EmailUtil {
         message.setSentDate(new Date());
         // 发送邮件
         Transport.send(message);
-        System.out.println("send email success");
+        log.info("send email success");
     }
 
 }

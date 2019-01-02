@@ -19,7 +19,7 @@ public class Email {
         this.receiver = props.getProperty("receiver");
         this.subject = props.getProperty("subject");
         this.text = props.getProperty("text");
-        this.filename = props.getProperty("filename");
+        this.filename = props.getProperty("attachFilePath");
     }
 
     @Override
